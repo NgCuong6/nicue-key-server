@@ -44,7 +44,7 @@ analytics_collection = db.analytics
 
 # Rate limiting
 limiter = Limiter(
-    app,
+    app=app,
     key_func=get_remote_address,
     default_limits=["200 per day", "50 per hour"]
 )
