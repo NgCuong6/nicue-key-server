@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, render_template_string, redirect
 from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -385,19 +385,137 @@ def show_key():
     </html>
     """, key=key)
 
-@app.route('/generate', methods=['POST'])
-@limiter.limit("3/minute")
-@security_check
+@app.route('/generate', methods=['GET', 'POST'])
 def generate_key():
     try:
-        # Kiểm tra Link4m token
-        token = request.args.get('token')
-        if not token:
+        # Lấy thông tin từ request
+        params = request.args.to_dict()
+        print("DEBUG - Request params:", params)  # Debug line
+        
+        # Lấy thông tin thiết bị và IP
+        ip = request.remote_addr
+        hw_id = request.headers.get('X-Hardware-ID', '')
+        user_agent = request.headers.get('User-Agent', '')
+        
+        # Tạo JWT token và key data
+        now = datetime.datetime.utcnow()
+        key_data = {
+            "key_id": str(uuid.uuid4()),
+            "ip": ip,
+            "hardware_id": hw_id,
+            "user_agent": user_agent,
+            "created_at": now,
+            "expires_at": now + datetime.timedelta(minutes=20),
+            "params": params  # Lưu lại các params từ Link4M
+        }
+        
+        # Mã hóa và lưu key
+        jwt_token = jwt.encode(key_data, JWT_SECRET, algorithm='HS256')
+        key_data['key'] = jwt_token
+        key_data['encrypted_key'] = encrypt_key(key_data)
+        
+        # Lưu vào database
+        keys_collection.insert_one(key_data)
+        
+        # Log analytics
+        analytics_collection.insert_one({
+            "event": "key_generated",
+            "ip": ip,
+            "key_id": key_data['key_id'],
+            "user_agent": user_agent,
+            "params": params,
+            "timestamp": now
+        })
+        
+        # Chuyển hướng đến trang hiển thị key
+        return redirect(f"/key/?key={jwt_token}")
+        
+        # Thu thập thông tin
+        ip = request.remote_addr
+        
+        # Kiểm tra xem IP này đã lấy key gần đây chưa
+        recent_key = keys_collection.find_one({
+            "ip": ip,
+            "created_at": {"$gt": datetime.datetime.utcnow() - datetime.timedelta(minutes=20)}
+        })
+        
+        if recent_key:
+            if request.method == 'POST':
+                return jsonify({
+                    "status": "error",
+                    "message": "Vui lòng đợi 20 phút trước khi lấy key mới"
+                }), 400
+            else:
+                return render_template_string("""
+                    <html>
+                        <body style="text-align: center; font-family: Arial; background: #1a1a1a; color: #fff; padding: 20px;">
+                            <h2 style="color: #ff3333;">⚠️ Không thể lấy key</h2>
+                            <p>Vui lòng đợi 20 phút trước khi lấy key mới</p>
+                            <p>Thời gian chờ còn lại: {{ remaining_time }} phút</p>
+                        </body>
+                    </html>
+                    """, remaining_time=int((recent_key['created_at'] + timedelta(minutes=20) - datetime.datetime.utcnow()).total_seconds() / 60))
+        
+        # Tạo key mới
+        key_data = {
+            "key_id": str(uuid.uuid4()),
+            "ip": ip,
+            "hardware_id": request.headers.get('X-Hardware-ID'),
+            "tool_version": request.headers.get('X-Tool-Version'),
+            "created_at": datetime.datetime.utcnow(),
+            "expires_at": datetime.datetime.utcnow() + datetime.timedelta(minutes=20)
+        }
+        
+        # Mã hóa key
+        encrypted_key = encrypt_key(key_data)
+        
+        # Tạo JWT token
+        jwt_token = jwt.encode(key_data, JWT_SECRET, algorithm='HS256')
+        
+        # Lưu vào database
+        key_data['key'] = jwt_token
+        key_data['encrypted_key'] = encrypted_key
+        keys_collection.insert_one(key_data)
+        
+        # Log analytics
+        analytics_collection.insert_one({
+            "event": "key_generated",
+            "ip": ip,
+            "key_id": key_data['key_id'],
+            "timestamp": datetime.datetime.utcnow(),
+            "tool_version": key_data['tool_version'],
+            "params": params  # Lưu lại params nhận được từ Link4M
+        })
+        
+        # Redirect đến trang hiển thị key
+        if request.method == 'POST':
             return jsonify({
-                "status": "error",
-                "code": "LINK4M_REQUIRED",
-                "message": "Vui lòng vượt link để lấy key"
-            }), 400
+                "status": "success",
+                "redirect_url": f"/key/?key={jwt_token}",
+                "message": "Key đã được tạo thành công!"
+            })
+        else:
+            return redirect(f"/key/?key={jwt_token}")
+            
+    except Exception as e:
+        # Log lỗi
+        analytics_collection.insert_one({
+            "event": "error",
+            "error": str(e),
+            "timestamp": datetime.utcnow()
+        })
+        if request.method == 'POST':
+            return jsonify({"status": "error", "message": str(e)}), 500
+        else:
+            return render_template_string("""
+                <html>
+                    <body style="text-align: center; font-family: Arial; background: #1a1a1a; color: #fff; padding: 20px;">
+                        <h2 style="color: #ff3333;">❌ Lỗi</h2>
+                        <p>{{ error }}</p>
+                        <p><a href="/" style="color: #00ff00;">Quay lại trang chủ</a></p>
+                    </body>
+                </html>
+            """, error=str(e))
             
         # Thu thập thông tin
         ip = request.remote_addr
