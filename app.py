@@ -458,7 +458,43 @@ def generate_key():
         hw_id = request.headers.get('X-Hardware-ID', '')
         user_agent = request.headers.get('User-Agent', '')
         
-        # Tạo JWT token và key data
+        # Kiểm tra giới hạn số lần lấy key
+        recent_key = keys_collection.find_one({
+            "ip": ip,
+            "created_at": {"$gt": datetime.datetime.utcnow() - datetime.timedelta(minutes=20)}
+        })
+        
+        if recent_key:
+            # Tính thời gian còn lại
+            now = datetime.datetime.utcnow()
+            expires_at = recent_key['created_at'] + datetime.timedelta(minutes=20)
+            remaining = (expires_at - now).total_seconds()
+            
+            return render_template_string("""
+                <html>
+                    <head>
+                        <title>Lỗi - NiCue Mod</title>
+                        <style>
+                            body { font-family: Arial; background: #f0f2f5; margin: 0; padding: 20px; }
+                            .container { max-width: 600px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; text-align: center; }
+                            .error { color: #e74c3c; font-size: 24px; margin: 20px 0; }
+                            .timer { font-size: 36px; color: #e74c3c; margin: 20px 0; }
+                            .button { background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <h1>⚠️ Không thể lấy key mới</h1>
+                            <p class="error">Bạn đã lấy key trong 20 phút qua</p>
+                            <p>Vui lòng đợi:</p>
+                            <div class="timer" id="timer">{{ minutes }}:{{ seconds }}</div>
+                            <a href="/" class="button">Quay lại trang chủ</a>
+                        </div>
+                    </body>
+                </html>
+            """, minutes=int(remaining / 60), seconds=int(remaining % 60))
+            
+        # Tạo key mới
         now = datetime.datetime.utcnow()
         key_data = {
             "key_id": str(uuid.uuid4()),
@@ -467,11 +503,20 @@ def generate_key():
             "user_agent": user_agent,
             "created_at": now,
             "expires_at": now + datetime.timedelta(minutes=20),
-            "params": params  # Lưu lại các params từ Link4M
+            "params": params
         }
         
         # Mã hóa và lưu key
-        jwt_token = jwt.encode(key_data, JWT_SECRET, algorithm='HS256')
+        jwt_token = jwt.encode(
+            {
+                "key_id": key_data["key_id"],
+                "created_at": key_data["created_at"].isoformat(),
+                "expires_at": key_data["expires_at"].isoformat()
+            }, 
+            JWT_SECRET, 
+            algorithm='HS256'
+        )
+        
         key_data['key'] = jwt_token
         key_data['encrypted_key'] = encrypt_key(key_data)
         
@@ -490,6 +535,30 @@ def generate_key():
         
         # Chuyển hướng đến trang hiển thị key
         return redirect(f"/key/?key={jwt_token}")
+        
+    except Exception as e:
+        print(f"Error in generate_key: {str(e)}")  # Log lỗi
+        return render_template_string("""
+            <html>
+                <head>
+                    <title>Lỗi - NiCue Mod</title>
+                    <style>
+                        body { font-family: Arial; background: #f0f2f5; margin: 0; padding: 20px; }
+                        .container { max-width: 600px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; text-align: center; }
+                        .error { color: #e74c3c; margin: 20px 0; }
+                        .button { background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>❌ Đã xảy ra lỗi</h1>
+                        <p class="error">{{ error }}</p>
+                        <p>Vui lòng thử lại sau hoặc liên hệ admin</p>
+                        <a href="/" class="button">Quay lại trang chủ</a>
+                    </div>
+                </body>
+            </html>
+        """, error=str(e))
         
         # Thu thập thông tin
         ip = request.remote_addr
