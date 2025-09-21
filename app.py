@@ -19,9 +19,13 @@ import json
 from functools import wraps
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from link4m import Link4M
 
 # Load environment variables
 load_dotenv()
+
+# Initialize Link4M API
+link4m_api = Link4M()
 
 app = Flask(__name__)
 CORS(app)
@@ -481,6 +485,35 @@ def generate_key():
         print(f"IP: {request.remote_addr}")
         print(f"User-Agent: {request.headers.get('User-Agent')}")
         
+        # Xác thực URL từ Link4M nếu có
+        if url:
+            link4m_info = link4m_api.verify_link(url)
+            if not link4m_info or link4m_info.get('status') != 'success':
+                return render_template_string("""
+                    <html>
+                        <head>
+                            <title>Lỗi - NiCue Mod</title>
+                            <style>
+                                body { font-family: Arial; background: #f0f2f5; margin: 0; padding: 20px; }
+                                .container { max-width: 600px; margin: 50px auto; background: white; padding: 20px; border-radius: 10px; text-align: center; }
+                                .error { color: #e74c3c; font-size: 24px; margin: 20px 0; }
+                                .button { background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 20px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <h1>❌ Link không hợp lệ</h1>
+                                <p class="error">Link rút gọn không hợp lệ hoặc đã hết hạn</p>
+                                <p>Vui lòng sử dụng link chính thức từ tool</p>
+                                <a href="/" class="button">Quay lại trang chủ</a>
+                            </div>
+                        </body>
+                    </html>
+                """), 400
+                
+            # Lưu thông tin từ Link4M
+            link4m_data = link4m_info.get('data', {})
+        
         # Lấy thông tin thiết bị và IP
         ip = request.remote_addr
         hw_id = request.headers.get('X-Hardware-ID', '')
@@ -537,6 +570,7 @@ def generate_key():
             "expires_at": now + timedelta(minutes=20),
             "params": params,
             "url": url,  # URL từ Link4M
+            "link4m_info": link4m_data if url else None,  # Thông tin từ Link4M API
             "status": "active"
         }
         
@@ -752,6 +786,7 @@ def verify_key():
     try:
         data = request.get_json()
         key = data.get('key')
+        tool_settings = data.get('settings', {})  # Nhận cài đặt từ tool
         
         if not key:
             return jsonify({
@@ -850,10 +885,25 @@ def verify_key():
             "timestamp": datetime.datetime.utcnow()
         })
             
+        # Trả về thông tin phù hợp với NCM Tool
         return jsonify({
             "status": "ok",
             "expires_in": int(remaining),
-            "message": "Key hợp lệ"
+            "message": "Key hợp lệ",
+            "tool_config": {
+                "features": {
+                    "mod_ff_max": True,  # Cho phép mod FF MAX
+                    "mod_ff_th": True,   # Cho phép mod FF TH
+                    "optimize_image": True  # Cho phép tối ưu ảnh
+                },
+                "files": {
+                    "comic_bug": True,    # File Truyện Tranh & Côn Trùng
+                    "tanjiro": True,      # Keo Tanjiro
+                    "booya": True,        # Keo Booya
+                    "seven": True,        # Keo 7 Tuổi
+                    "hippo": True         # Keo Hà Mã
+                }
+            }
         })
         
     except Exception as e:
