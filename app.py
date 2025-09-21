@@ -218,92 +218,132 @@ def show_key():
     if not key:
         return "Key không hợp lệ!", 400
         
+    # Lấy thông tin key từ database
+    key_data = keys_collection.find_one({"key": key})
+    if not key_data:
+        return "Key không tồn tại!", 400
+        
+    # Tính thời gian còn lại
+    remaining = (key_data['expires_at'] - datetime.datetime.utcnow()).total_seconds()
+    remaining_minutes = int(remaining / 60)
+    
+    if remaining <= 0:
+        return "Key đã hết hạn!", 400
+        
     return render_template_string("""
     <html>
     <head>
-        <title>Key NiCue Mod</title>
+        <title>NiCue Mod Key</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
                 margin: 0;
                 padding: 20px;
-                background: #1a1a1a;
-                color: #fff;
+                background: #f0f2f5;
+                color: #1c1e21;
             }
             .container {
                 max-width: 800px;
-                margin: 0 auto;
-                background: #2d2d2d;
+                margin: 20px auto;
+                background: white;
                 padding: 20px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                border-radius: 15px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .header {
+                text-align: center;
+                padding: 20px;
+                border-bottom: 2px solid #e4e6eb;
+                margin-bottom: 20px;
+            }
+            .profile-img {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                margin-bottom: 10px;
             }
             h1 {
-                color: #00ff00;
-                text-align: center;
-                margin-bottom: 30px;
+                color: #1877f2;
+                margin: 10px 0;
+                font-size: 24px;
+            }
+            .section {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+                border: 1px solid #e4e6eb;
+            }
+            .section-title {
+                color: #4cd137;
+                font-size: 18px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                display: flex;
+                align-items: center;
+            }
+            .section-title i {
+                margin-right: 10px;
             }
             .key-box {
-                background: #3d3d3d;
+                background: #1877f2;
+                color: white;
                 padding: 20px;
-                border-radius: 5px;
-                margin: 20px 0;
+                border-radius: 10px;
                 text-align: center;
-                position: relative;
+                margin: 20px 0;
             }
             .key {
-                font-size: 18px;
-                color: #00ff00;
-                word-break: break-all;
                 font-family: monospace;
+                font-size: 18px;
+                word-break: break-all;
+                background: rgba(255,255,255,0.1);
+                padding: 10px;
+                border-radius: 5px;
+            }
+            .timer {
+                font-size: 24px;
+                color: #e84118;
                 margin: 10px 0;
+                font-weight: bold;
             }
             .copy-btn {
-                background: #00ff00;
-                color: #000;
+                background: #4cd137;
+                color: white;
                 border: none;
                 padding: 10px 20px;
                 border-radius: 5px;
                 cursor: pointer;
-                margin-top: 10px;
+                font-weight: bold;
+                transition: all 0.3s;
             }
             .copy-btn:hover {
-                background: #00cc00;
+                background: #44bd32;
+                transform: translateY(-2px);
             }
-            .timer {
-                font-size: 24px;
-                color: #ff3333;
-                margin: 20px 0;
-            }
-            .info {
-                background: #3d3d3d;
-                padding: 15px;
-                border-radius: 5px;
-                margin-bottom: 15px;
-            }
-            .loading {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.8);
+            .contact {
                 display: flex;
-                justify-content: center;
                 align-items: center;
-                border-radius: 5px;
+                margin: 10px 0;
             }
-            .spinner {
-                width: 40px;
-                height: 40px;
-                border: 4px solid #f3f3f3;
-                border-top: 4px solid #00ff00;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
+            .contact i {
+                margin-right: 10px;
+                color: #1877f2;
             }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+            .contact a {
+                color: #1877f2;
+                text-decoration: none;
+            }
+            .contact a:hover {
+                text-decoration: underline;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            .key-box {
+                animation: pulse 2s infinite;
             }
         </style>
         <script>
@@ -329,56 +369,77 @@ def show_key():
                 var key = document.querySelector('.key').textContent;
                 navigator.clipboard.writeText(key);
                 var btn = document.querySelector('.copy-btn');
-                btn.textContent = 'Đã Copy!';
+                btn.textContent = 'Đã Copy ✓';
                 setTimeout(() => {
                     btn.textContent = 'Copy Key';
                 }, 2000);
             }
 
             window.onload = function () {
-                var twentyMinutes = 60 * 20,
-                    display = document.querySelector('#time');
-                startTimer(twentyMinutes, display);
-                
-                // Hiệu ứng loading
-                setTimeout(() => {
-                    document.querySelector('.loading').style.display = 'none';
-                }, 1500);
+                startTimer({{ remaining_minutes }} * 60, document.querySelector('#time'));
             };
         </script>
     </head>
     <body>
         <div class="container">
-            <h1>🔑 Key NiCue Mod</h1>
-            
-            <div class="key-box">
-                <div class="loading">
-                    <div class="spinner"></div>
+            <div class="header">
+                <img src="https://i.imgur.com/placeholder.jpg" class="profile-img" alt="NiCue Mod">
+                <h1>Do Nguyen Dang Khoi</h1>
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <i>🔑</i> THÔNG TIN LIÊN HỆ
                 </div>
-                <h3>Key của bạn:</h3>
-                <p class="key">{{ key }}</p>
-                <button class="copy-btn" onclick="copyKey()">Copy Key</button>
+                <div class="contact">
+                    <i>📘</i>
+                    <a href="https://www.facebook.com/profile" target="_blank">FACEBOOK: Do Nguyen Dang Khoi</a>
+                </div>
+                <div class="contact">
+                    <i>💬</i>
+                    <a href="#" target="_blank">NHÓM ZALO: Cộng đồng KKtool</a>
+                </div>
+                <div class="contact">
+                    <i>🌐</i>
+                    <a href="#" target="_blank">WEBSITE: KKtool</a>
+                </div>
             </div>
 
-            <div class="info">
-                <h3>⏰ Thời gian còn lại:</h3>
-                <p class="timer"><span id="time">20:00</span></p>
+            <div class="section">
+                <div class="section-title">
+                    <i>🎮</i> KEY CỦA BẠN
+                </div>
+                <div class="key-box">
+                    <h3>Key có hiệu lực trong:</h3>
+                    <p class="timer"><span id="time">{{ remaining_minutes }}:00</span></p>
+                    <p class="key">{{ key }}</p>
+                    <button class="copy-btn" onclick="copyKey()">Copy Key</button>
+                </div>
             </div>
 
-            <div class="info">
-                <h3>📋 Hướng dẫn:</h3>
-                <p>1. Nhấn nút "Copy Key" ở trên</p>
-                <p>2. Mở tool NiCue Mod</p>
-                <p>3. Chọn "Nhập Key & Sử Dụng Tool"</p>
-                <p>4. Dán key vào và nhấn Enter</p>
+            <div class="section">
+                <div class="section-title">
+                    <i>⚠️</i> LƯU Ý QUAN TRỌNG
+                </div>
+                <ul>
+                    <li>Key chỉ có hiệu lực trong 20 phút</li>
+                    <li>Mỗi IP chỉ được lấy 1 key trong 20 phút</li>
+                    <li>Không reset/bypass để lấy key mới</li>
+                    <li>Không chia sẻ key cho người khác</li>
+                    <li>Key tự động hết hạn sau thời gian quy định</li>
+                </ul>
             </div>
-
-            <div class="info">
-                <h3>⚠️ Lưu ý:</h3>
-                <p>• Key chỉ có hiệu lực trong 20 phút</p>
-                <p>• Key chỉ sử dụng được trên 1 máy</p>
-                <p>• Không chia sẻ key cho người khác</p>
-                <p>• Hệ thống tự động phát hiện hành vi bất thường</p>
+            
+            <div class="section">
+                <div class="section-title">
+                    <i>📞</i> THÔNG TIN HỖ TRỢ
+                </div>
+                <div class="contact">
+                    <i>💳</i> MOMO: 0337660475 - DO ANH QUAN
+                </div>
+                <div class="contact">
+                    <i>🏦</i> MBANK: 7573037794195 - DO ANH QUAN
+                </div>
             </div>
         </div>
     </body>
