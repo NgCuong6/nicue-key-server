@@ -9,15 +9,13 @@ from cryptography.hazmat.primitives import serialization
 import jwt
 import hashlib
 import uuid
-import datetime
 import os
 import json
 import requests
 import random
 import string
-import json
-from functools import wraps
 from datetime import datetime, timedelta
+from functools import wraps
 from dotenv import load_dotenv
 from link4m import Link4M
 
@@ -216,7 +214,7 @@ def home():
         </div>
     </body>
     </html>
-    """, active_keys=keys_collection.count_documents({"expires_at": {"$gt": datetime.datetime.utcnow()}}),
+    """, active_keys=keys_collection.count_documents({"expires_at": {"$gt": datetime.utcnow()}}),
         uptime=99.9,
         blocked_ips=blacklist_collection.count_documents({}))
 
