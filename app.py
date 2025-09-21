@@ -13,7 +13,11 @@ import datetime
 import os
 import json
 import requests
+import random
+import string
+import json
 from functools import wraps
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -213,15 +217,32 @@ def home():
         blocked_ips=blacklist_collection.count_documents({}))
 
 @app.route('/key/')
+@security_check
 def show_key():
-    key = request.args.get('key')
-    if not key:
+    # Lấy JWT token từ query parameter
+    token = request.args.get('key')
+    if not token:
         return "Key không hợp lệ!", 400
         
+    # Giải mã JWT token
+    try:
+        decoded = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        key_id = decoded.get('key_id')
+        display_key = decoded.get('display_key')
+    except jwt.InvalidTokenError:
+        return "Key không hợp lệ hoặc đã hết hạn!", 400
+        
     # Lấy thông tin key từ database
-    key_data = keys_collection.find_one({"key": key})
+    key_data = keys_collection.find_one({"key_id": key_id})
     if not key_data:
         return "Key không tồn tại!", 400
+        
+    # Tính thời gian còn lại
+    remaining = (key_data['expires_at'] - datetime.utcnow()).total_seconds()
+    remaining_minutes = max(0, int(remaining / 60))
+    
+    if remaining <= 0:
+        return "Key đã hết hạn!", 400
         
     # Tính thời gian còn lại
     remaining = (key_data['expires_at'] - datetime.datetime.utcnow()).total_seconds()
@@ -412,7 +433,7 @@ def show_key():
                 <div class="key-box">
                     <h3>Key có hiệu lực trong:</h3>
                     <p class="timer"><span id="time">{{ remaining_minutes }}:00</span></p>
-                    <p class="key">{{ key }}</p>
+                    <p class="key" id="keyText">{{ display_key }}</p>
                     <button class="copy-btn" onclick="copyKey()">Copy Key</button>
                 </div>
             </div>
@@ -444,14 +465,21 @@ def show_key():
         </div>
     </body>
     </html>
-    """, key=key)
+    """, display_key=display_key, remaining_minutes=remaining_minutes)
 
 @app.route('/generate', methods=['GET', 'POST'])
+@security_check
 def generate_key():
     try:
-        # Lấy thông tin từ request
+        # Lấy thông tin từ request và các tham số từ Link4M
         params = request.args.to_dict()
-        print("DEBUG - Request params:", params)  # Debug line
+        url = params.get('url', '')  # Link4M redirect URL parameter
+        
+        # Log request cho debugging
+        print("[DEBUG] Generate Key Request:")
+        print(f"Parameters: {params}")
+        print(f"IP: {request.remote_addr}")
+        print(f"User-Agent: {request.headers.get('User-Agent')}")
         
         # Lấy thông tin thiết bị và IP
         ip = request.remote_addr
@@ -494,22 +522,29 @@ def generate_key():
                 </html>
             """, minutes=int(remaining / 60), seconds=int(remaining % 60))
             
-        # Tạo key mới
-        now = datetime.datetime.utcnow()
+        # Tạo key mới với định dạng giống như mẫu (20 ký tự, chữ in hoa và số)
+        now = datetime.utcnow()
+        display_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+        
+        # Tạo key data với đầy đủ thông tin
         key_data = {
             "key_id": str(uuid.uuid4()),
+            "display_key": display_key,  # Key hiển thị cho người dùng
             "ip": ip,
             "hardware_id": hw_id,
             "user_agent": user_agent,
             "created_at": now,
-            "expires_at": now + datetime.timedelta(minutes=20),
-            "params": params
+            "expires_at": now + timedelta(minutes=20),
+            "params": params,
+            "url": url,  # URL từ Link4M
+            "status": "active"
         }
         
-        # Mã hóa và lưu key
+        # Tạo JWT token với thông tin cần thiết
         jwt_token = jwt.encode(
             {
                 "key_id": key_data["key_id"],
+                "display_key": key_data["display_key"],
                 "created_at": key_data["created_at"].isoformat(),
                 "expires_at": key_data["expires_at"].isoformat()
             }, 
