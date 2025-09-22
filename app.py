@@ -45,7 +45,6 @@ public_key = private_key.public_key()
 client = MongoClient(MONGO_URI)
 db = client.keydb
 keys_collection = db.keys
-blacklist_collection = db.blacklist
 analytics_collection = db.analytics
 
 # Rate limiting
@@ -203,8 +202,7 @@ def home():
     </body>
     </html>
     """, active_keys=keys_collection.count_documents({"expires_at": {"$gt": datetime.utcnow()}}),
-        uptime=99.9,
-        blocked_ips=blacklist_collection.count_documents({}))
+        uptime=99.9)
 
 
 @app.route('/key/')
@@ -477,15 +475,19 @@ def generate_key():
 
         now = datetime.utcnow()
         display_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-
+        
+        # Convert datetimes to ISO format strings for JSON serialization
+        created_at = now
+        expires_at = now + timedelta(minutes=20)
+        
         key_data = {
             "key_id": str(uuid.uuid4()),
             "display_key": display_key,
             "ip": ip,
             "hardware_id": hw_id,
             "user_agent": user_agent,
-            "created_at": now,
-            "expires_at": now + timedelta(minutes=20),
+            "created_at": created_at.isoformat(),
+            "expires_at": expires_at.isoformat(),
             "params": params,
             "url": url,
             "link4m_info": link4m_data if url else None,
@@ -545,7 +547,6 @@ def verify_key():
         current_ip = request.remote_addr
         if stored_key['ip'] != current_ip:
             analytics_collection.insert_one({"event": "suspicious_activity","type": "ip_mismatch","key_id": key_data['key_id'],"original_ip": stored_key['ip'],"attempt_ip": current_ip,"timestamp": datetime.utcnow()})
-            blacklist_collection.insert_one({"ip": current_ip, "reason": "IP mismatch attempt", "key_id": key_data['key_id'], "timestamp": datetime.utcnow()})
             return jsonify({"status": "error", "message": "Key không thể sử dụng trên IP này"}), 403
 
         current_hw_id = request.headers.get('X-Hardware-ID')
@@ -577,8 +578,7 @@ def analytics():
 
         total_keys = keys_collection.count_documents({})
         active_keys = keys_collection.count_documents({"expires_at": {"$gt": datetime.utcnow()}})
-        blocked_ips = blacklist_collection.count_documents({})
-
+        
         recent_activity = list(analytics_collection.find({}, {'_id': 0}).sort([('timestamp', -1)]).limit(50))
 
         return render_template_string("<h1>Analytics</h1>"), 200
