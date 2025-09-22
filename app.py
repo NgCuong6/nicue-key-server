@@ -56,33 +56,17 @@ limiter = Limiter(
 )
 
 
-# Middleware bảo mật
-def security_check(f):
+# Simple decorator for logging
+def log_request(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         ip = request.remote_addr
-
-        # Kiểm tra IP có trong blacklist
-        if blacklist_collection.find_one({"ip": ip}):
-            # Log analytics
-            analytics_collection.insert_one({
-                "event": "blocked_request",
-                "ip": ip,
-                "timestamp": datetime.utcnow(),
-                "reason": "blacklisted"
-            })
-            return jsonify({"status": "error", "message": "IP đã bị chặn"}), 403
-
-        # Kiểm tra User-Agent
-        user_agent = request.headers.get('User-Agent', '')
-        if not user_agent or any(bot in user_agent.lower() for bot in ['python-requests', 'curl', 'wget']):
-            blacklist_collection.insert_one({
-                "ip": ip,
-                "reason": "Invalid User-Agent",
-                "timestamp": datetime.utcnow()
-            })
-            return jsonify({"status": "error", "message": "Access denied"}), 403
-
+        analytics_collection.insert_one({
+            "event": "request",
+            "ip": ip,
+            "path": request.path,
+            "timestamp": datetime.utcnow()
+        })
         return f(*args, **kwargs)
     return decorated
 
@@ -224,39 +208,173 @@ def home():
 
 
 @app.route('/key/')
-@security_check
+@log_request
 def show_key():
     token = request.args.get('key')
     if not token:
         return "Key không hợp lệ!", 400
-
+        
     try:
-        decoded = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
+        decoded = jwt.decode(token, JWT_SECRET, algorithms=['HS256']) 
         key_id = decoded.get('key_id')
         display_key = decoded.get('display_key')
-    except jwt.InvalidTokenError:
-        return "Key không hợp lệ hoặc đã hết hạn!", 400
+    except:
+        return "Key không hợp lệ!", 400
 
     key_data = keys_collection.find_one({"key_id": key_id})
     if not key_data:
         return "Key không tồn tại!", 400
-
+        
     remaining = (key_data['expires_at'] - datetime.utcnow()).total_seconds()
     remaining_minutes = max(0, int(remaining / 60))
-
-    if remaining <= 0:
-        return "Key đã hết hạn!", 400
 
     return render_template_string("""
     <html>
     <head>
         <title>NiCue Mod Key</title>
-        <style>/* omitted for brevity */</style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                min-height: 100vh;
+                background: #1a1a1a;
+                font-family: 'Segoe UI', sans-serif;
+                color: #fff;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .container {
+                width: 100%;
+                max-width: 500px;
+                background: linear-gradient(145deg, #2d2d2d, #1f1f1f);
+                border-radius: 20px;
+                padding: 30px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .header img {
+                width: 120px;
+                height: 120px;
+                border-radius: 60px;
+                border: 3px solid #00ff00;
+                margin-bottom: 15px;
+            }
+
+            .header h1 {
+                color: #00ff00;
+                font-size: 24px;
+                margin: 0;
+                text-shadow: 0 0 10px rgba(0,255,0,0.5);
+            }
+
+            .key-box {
+                background: #2d2d2d;
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+                margin: 20px 0;
+                border: 2px solid #00ff00;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .key {
+                font-family: monospace;
+                font-size: 24px;
+                color: #00ff00;
+                margin: 10px 0;
+                text-shadow: 0 0 5px rgba(0,255,0,0.5);
+                word-break: break-all;
+            }
+
+            .timer {
+                font-size: 36px;
+                color: #ff3333;
+                margin: 10px 0;
+                font-weight: bold;
+            }
+
+            .copy-btn {
+                background: #00ff00;
+                color: #000;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 25px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin-top: 10px;
+            }
+
+            .copy-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 0 15px rgba(0,255,0,0.5);
+            }
+
+            .info-box {
+                background: #2d2d2d;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .info-box h3 {
+                color: #00ff00;
+                margin-top: 0;
+                font-size: 18px;
+            }
+
+            .info-box p {
+                margin: 10px 0;
+                color: #ccc;
+            }
+
+            .warning {
+                color: #ff3333;
+            }
+
+            .social {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                margin-top: 20px;
+            }
+
+            .social a {
+                color: #00ff00;
+                text-decoration: none;
+                font-size: 16px;
+                transition: all 0.3s ease;
+            }
+
+            .social a:hover {
+                transform: scale(1.1);
+                text-shadow: 0 0 10px rgba(0,255,0,0.5);
+            }
+
+            @keyframes glow {
+                0% { box-shadow: 0 0 5px #00ff00; }
+                50% { box-shadow: 0 0 20px #00ff00; }
+                100% { box-shadow: 0 0 5px #00ff00; }
+            }
+
+            .key-box {
+                animation: glow 2s infinite;
+            }
+        </style>
         <script>
             function startTimer(duration, display) {
                 var timer = duration, minutes, seconds;
                 setInterval(function () {
-                    minutes = parseInt(timer / 60, 10);
+                    minutes = parseInt(timer / 60, 10)
                     seconds = parseInt(timer % 60, 10);
 
                     minutes = minutes < 10 ? "0" + minutes : minutes;
@@ -279,17 +397,45 @@ def show_key():
                 setTimeout(() => { btn.textContent = 'Copy Key'; }, 2000);
             }
 
-            window.onload = function () { startTimer({{ remaining_minutes }} * 60, document.querySelector('#time')); };
+            window.onload = function () {
+                var minutes = {{ remaining_minutes }};
+                var display = document.querySelector('#time');
+                startTimer(minutes * 60, display);
+            };
         </script>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <img src="https://i.imgur.com/placeholder.jpg" class="profile-img" alt="NiCue Mod">
-                <h1>Do Nguyen Dang Khoi</h1>
+                <img src="https://i.imgur.com/YOUR_IMAGE.jpg" alt="NiCue Mod">
+                <h1>NiCue Mod</h1>
             </div>
-            <div class="section">/* omitted for brevity */</div>
-            <div class="key-box"><p class="key" id="keyText">{{ display_key }}</p><p id="time">{{ remaining_minutes }}:00</p></div>
+
+            <div class="key-box">
+                <h2>🔑 Key của bạn</h2>
+                <p class="key">{{ display_key }}</p>
+                <p class="timer" id="time">{{ remaining_minutes }}:00</p>
+                <button class="copy-btn" onclick="copyKey()">Copy Key</button>
+            </div>
+
+            <div class="info-box">
+                <h3>📋 Hướng dẫn</h3>
+                <p>• Copy key ở trên</p>
+                <p>• Mở tool NiCue Mod</p>
+                <p>• Dán key vào và nhấn Enter</p>
+            </div>
+
+            <div class="info-box warning">
+                <h3>⚠️ Lưu ý</h3>
+                <p>• Key chỉ có hiệu lực trong {{ remaining_minutes }} phút</p>
+                <p>• Key chỉ sử dụng được 1 lần</p>
+                <p>• Không chia sẻ key cho người khác</p>
+            </div>
+
+            <div class="social">
+                <a href="https://zalo.me/0349667922">💬 Zalo</a>
+                <a href="https://youtube.com/@NiCueMod">📺 Youtube</a>
+            </div>
         </div>
     </body>
     </html>
@@ -297,7 +443,7 @@ def show_key():
 
 
 @app.route('/generate', methods=['GET', 'POST'])
-@security_check
+@log_request
 def generate_key():
     try:
         params = request.args.to_dict()
@@ -376,7 +522,7 @@ def generate_key():
 
 @app.route('/verify', methods=['POST'])
 @limiter.limit("10/minute")
-@security_check
+@log_request
 def verify_key():
     try:
         data = request.get_json() or {}
@@ -422,7 +568,7 @@ def verify_key():
 
 
 @app.route('/analytics')
-@security_check
+@log_request
 def analytics():
     try:
         auth = request.authorization
