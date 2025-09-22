@@ -223,7 +223,9 @@ def show_key():
     if not key_data:
         return "Key không tồn tại!", 400
         
-    remaining = (key_data['expires_at'] - datetime.utcnow()).total_seconds()
+    # Parse ISO format string back to datetime
+    expires_at = datetime.fromisoformat(key_data['expires_at'])
+    remaining = (expires_at - datetime.utcnow()).total_seconds()
     remaining_minutes = max(0, int(remaining / 60))
 
     return render_template_string("""
@@ -469,14 +471,16 @@ def generate_key():
 
         if recent_key:
             now = datetime.utcnow()
-            expires_at = recent_key['created_at'] + timedelta(minutes=20)
+            # Parse ISO format string back to datetime
+            created_at = datetime.fromisoformat(recent_key['created_at'])
+            expires_at = created_at + timedelta(minutes=20)
             remaining = (expires_at - now).total_seconds()
             return render_template_string("<h1>⚠️ Bạn đã lấy key trong 20 phút qua</h1>"), 400
 
         now = datetime.utcnow()
         display_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
-        
-        # Convert datetimes to ISO format strings for JSON serialization
+
+        # Create datetime objects
         created_at = now
         expires_at = now + timedelta(minutes=20)
         
@@ -554,7 +558,8 @@ def verify_key():
             analytics_collection.insert_one({"event": "suspicious_activity","type": "hwid_mismatch","key_id": key_data['key_id'],"original_hwid": stored_key.get('hardware_id'),"attempt_hwid": current_hw_id,"timestamp": datetime.utcnow()})
             return jsonify({"status": "error", "message": "Key không thể sử dụng trên thiết bị này"}), 403
 
-        expires_at = stored_key['expires_at']
+        # Parse ISO format string back to datetime
+        expires_at = datetime.fromisoformat(stored_key['expires_at'])
         remaining = (expires_at - datetime.utcnow()).total_seconds()
         if remaining <= 0:
             return jsonify({"status": "error", "message": "Key đã hết hạn"}), 400
