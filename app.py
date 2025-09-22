@@ -14,6 +14,7 @@ import json
 import requests
 import random
 import string
+import time
 from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
@@ -55,17 +56,27 @@ limiter = Limiter(
 )
 
 
-# Simple decorator for logging
+# Enhanced decorator for logging with comprehensive request info
 def log_request(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        ip = request.remote_addr
-        analytics_collection.insert_one({
-            "event": "request",
-            "ip": ip,
-            "path": request.path,
-            "timestamp": datetime.utcnow()
-        })
+        try:
+            ip = request.remote_addr
+            hw_id = request.headers.get('X-Hardware-ID', '')
+            analytics_collection.insert_one({
+                "event": "request",
+                "ip": ip,
+                "path": request.path,
+                "method": request.method,
+                "user_agent": request.headers.get('User-Agent', ''),
+                "hardware_id": hw_id,
+                "args": dict(request.args),
+                "referrer": request.headers.get('Referer', ''),
+                "timestamp": datetime.utcnow().isoformat(),
+                "endpoint": f.__name__
+            })
+        except Exception as e:
+            print(f"Error logging request: {e}")
         return f(*args, **kwargs)
     return decorated
 
@@ -201,8 +212,12 @@ def home():
         </div>
     </body>
     </html>
-    """, active_keys=keys_collection.count_documents({"expires_at": {"$gt": datetime.utcnow()}}),
-        uptime=99.9)
+    """, 
+        active_keys=keys_collection.count_documents({"expires_at": {"$gt": datetime.utcnow().isoformat()}}),
+        uptime=99.9,
+        total_requests=analytics_collection.count_documents({"event": "request"}),
+        total_keys=keys_collection.count_documents({}),
+        server_time=datetime.utcnow().isoformat())
 
 
 @app.route('/key/')
@@ -538,11 +553,44 @@ def verify_key():
             return jsonify({"status": "error", "message": "Không tìm thấy key"}), 400
 
         try:
-            key_data = jwt.decode(key, JWT_SECRET, algorithms=['HS256'])
+            key_data = jwt.decode(
+                key, 
+                JWT_SECRET, 
+                algorithms=['HS256'],
+                options={
+                    'verify_signature': True,
+                    'verify_exp': True,
+                    'verify_nbf': False,
+                    'verify_iat': True,
+                    'verify_aud': False
+                }
+            )
         except jwt.ExpiredSignatureError:
-            return jsonify({"status": "error", "message": "Key đã hết hạn"}), 400
-        except jwt.InvalidTokenError:
-            return jsonify({"status": "error", "message": "Key không hợp lệ"}), 400
+            analytics_collection.insert_one({
+                "event": "key_expired",
+                "key": key,
+                "ip": request.remote_addr,
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            return jsonify({
+                "status": "error", 
+                "code": "KEY_EXPIRED",
+                "message": "Key đã hết hạn"
+            }), 400
+        except jwt.InvalidTokenError as e:
+            analytics_collection.insert_one({
+                "event": "invalid_key",
+                "key": key,
+                "error": str(e),
+                "ip": request.remote_addr,
+                "timestamp": datetime.utcnow().isoformat()
+            })
+            return jsonify({
+                "status": "error",
+                "code": "INVALID_KEY", 
+                "message": "Key không hợp lệ",
+                "detail": str(e)
+            }), 400
 
         stored_key = keys_collection.find_one({"key_id": key_data['key_id']})
         if not stored_key:
@@ -591,5 +639,34 @@ def analytics():
         return str(e), 500
 
 
+# Cleanup scheduler
+def cleanup_old_data():
+    try:
+        # Xóa key hết hạn sau 1 ngày
+        keys_collection.delete_many({
+            "expires_at": {"$lt": (datetime.utcnow() - timedelta(days=1)).isoformat()}
+        })
+        
+        # Giữ lại analytics trong 7 ngày
+        analytics_collection.delete_many({
+            "timestamp": {"$lt": (datetime.utcnow() - timedelta(days=7)).isoformat()}
+        })
+        
+        print(f"Cleanup completed at {datetime.utcnow().isoformat()}")
+    except Exception as e:
+        print(f"Error during cleanup: {e}")
+
+# Scheduled cleanup every hour
+def run_scheduled_cleanup():
+    while True:
+        cleanup_old_data()
+        time.sleep(3600)  # 1 hour
+
 if __name__ == '__main__':
+    # Start cleanup thread
+    import threading
+    cleanup_thread = threading.Thread(target=run_scheduled_cleanup, daemon=True)
+    cleanup_thread.start()
+    
+    # Run app
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
