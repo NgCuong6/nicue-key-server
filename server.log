@@ -1,0 +1,183 @@
+2025-09-20 15:34:34,131 - INFO - Background cleanup thread started
+2025-09-20 15:34:34,136 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-20 15:34:34,138 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-20 15:34:34,138 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-20 15:34:34,138 - INFO -    • Auto cleanup every 3 minutes
+2025-09-20 15:34:34,138 - INFO -    • Key lifetime: 20 minutes
+2025-09-20 15:34:34,139 - INFO -    • Max keys in memory: 10000
+2025-09-20 15:34:34,140 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-20 15:34:34,142 - INFO -    • GET /health - Health check
+2025-09-20 15:34:34,170 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.23.79:5000
+2025-09-20 15:34:34,170 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-20 15:34:47,786 - INFO - 192.168.23.79 - - [20/Sep/2025 15:34:47] "[33mGET / HTTP/1.1[0m" 404 -
+2025-09-20 15:34:47,825 - INFO - 192.168.23.79 - - [20/Sep/2025 15:34:47] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-20 15:34:56,172 - INFO - 127.0.0.1 - - [20/Sep/2025 15:34:56] "[33mGET / HTTP/1.1[0m" 404 -
+2025-09-20 15:34:56,799 - INFO - 127.0.0.1 - - [20/Sep/2025 15:34:56] "[33mGET / HTTP/1.1[0m" 404 -
+2025-09-20 15:35:17,672 - INFO - Received signal 2, shutting down gracefully...
+2025-09-20 15:35:17,672 - INFO - Final stats: {'total_keys_generated': 0, 'total_requests': 0, 'rate_limited_requests': 0, 'expired_keys_cleaned': 0, 'active_keys': 0, 'active_ips': 0, 'cached_fingerprints': 0, 'tracked_ips_for_rate_limit': 0, 'server_uptime': 43, 'memory_usage_keys': 0, 'memory_usage_percentage': 0.0}
+2025-09-20 15:35:26,740 - INFO - Background cleanup thread started
+2025-09-20 15:35:26,743 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-20 15:35:26,745 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-20 15:35:26,745 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-20 15:35:26,745 - INFO -    • Auto cleanup every 3 minutes
+2025-09-20 15:35:26,745 - INFO -    • Key lifetime: 20 minutes
+2025-09-20 15:35:26,745 - INFO -    • Max keys in memory: 10000
+2025-09-20 15:35:26,748 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-20 15:35:26,748 - INFO -    • GET /health - Health check
+2025-09-20 15:35:26,761 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.23.79:5000
+2025-09-20 15:35:26,761 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-20 15:35:29,800 - INFO - Received signal 2, shutting down gracefully...
+2025-09-20 15:35:29,800 - INFO - Final stats: {'total_keys_generated': 0, 'total_requests': 0, 'rate_limited_requests': 0, 'expired_keys_cleaned': 0, 'active_keys': 0, 'active_ips': 0, 'cached_fingerprints': 0, 'tracked_ips_for_rate_limit': 0, 'server_uptime': 3, 'memory_usage_keys': 0, 'memory_usage_percentage': 0.0}
+2025-09-20 15:35:44,775 - INFO - Background cleanup thread started
+2025-09-20 15:35:44,778 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-20 15:35:44,779 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-20 15:35:44,779 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-20 15:35:44,779 - INFO -    • Auto cleanup every 3 minutes
+2025-09-20 15:35:44,779 - INFO -    • Key lifetime: 20 minutes
+2025-09-20 15:35:44,780 - INFO -    • Max keys in memory: 10000
+2025-09-20 15:35:44,782 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-20 15:35:44,783 - INFO -    • GET /health - Health check
+2025-09-20 15:35:44,795 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.23.79:5000
+2025-09-20 15:35:44,796 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-20 15:35:44,869 - INFO - 127.0.0.1 - - [20/Sep/2025 15:35:44] "[33mGET / HTTP/1.1[0m" 404 -
+2025-09-20 15:35:47,285 - INFO - 127.0.0.1 - - [20/Sep/2025 15:35:47] "[33mGET / HTTP/1.1[0m" 404 -
+2025-09-20 16:04:51,247 - INFO - Background cleanup thread started
+2025-09-20 16:04:51,251 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-20 16:04:51,252 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-20 16:04:51,252 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-20 16:04:51,253 - INFO -    • Auto cleanup every 3 minutes
+2025-09-20 16:04:51,253 - INFO -    • Key lifetime: 20 minutes
+2025-09-20 16:04:51,253 - INFO -    • Max keys in memory: 10000
+2025-09-20 16:04:51,255 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-20 16:04:51,256 - INFO -    • GET /health - Health check
+2025-09-20 16:04:51,267 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.23.79:5000
+2025-09-20 16:04:51,268 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-20 16:05:23,324 - INFO - Generated new key for IP 127.0.0.1
+2025-09-20 16:05:23,324 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:23] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:05:23,350 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-20 16:05:30,631 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:30] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:05:32,996 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:32] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:05:33,195 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:33] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:05:33,377 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:33] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:05:33,564 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:33] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:33,716 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:33] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:33,886 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:33] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:34,063 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:34] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:34,965 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:34] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:35,116 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:35] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:41,651 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:41] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:55,560 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:55] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:56,162 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:56] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:56,761 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:56] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:57,329 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:57] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:05:57,919 - INFO - 127.0.0.1 - - [20/Sep/2025 16:05:57] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:00,231 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:00] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:00,737 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:00] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:01,335 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:01] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:01,894 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:01] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:02,383 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:02] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:02,918 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:02] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:04,846 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:04] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:05,984 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:05] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:06,597 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:06] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:07,096 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:07] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:09,041 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:09] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:12,310 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:12] "[31m[1mGET /getkey HTTP/1.1[0m" 429 -
+2025-09-20 16:06:12,387 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:12] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-20 16:06:28,248 - INFO - 127.0.0.1 - - [20/Sep/2025 16:06:28] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:07:31,731 - INFO - 127.0.0.1 - - [20/Sep/2025 16:07:31] "GET /verify/VG142VP2X63401TZ HTTP/1.1" 200 -
+2025-09-20 16:07:43,585 - INFO - 127.0.0.1 - - [20/Sep/2025 16:07:43] "GET /getkey HTTP/1.1" 200 -
+2025-09-20 16:07:51,249 - INFO - Cleanup stats - Cleaned: 0, Active keys: 1, Active IPs: 1, Memory usage: 0.0%
+2025-09-20 16:07:55,089 - INFO - 127.0.0.1 - - [20/Sep/2025 16:07:55] "GET /verify/VG142VP2X63401TZ HTTP/1.1" 200 -
+2025-09-20 16:10:51,250 - INFO - Cleanup stats - Cleaned: 0, Active keys: 1, Active IPs: 1, Memory usage: 0.0%
+2025-09-20 16:13:51,251 - INFO - Cleanup stats - Cleaned: 0, Active keys: 1, Active IPs: 1, Memory usage: 0.0%
+2025-09-20 16:16:51,253 - INFO - Cleanup stats - Cleaned: 0, Active keys: 1, Active IPs: 1, Memory usage: 0.0%
+2025-09-20 16:19:51,254 - INFO - Cleanup stats - Cleaned: 0, Active keys: 1, Active IPs: 1, Memory usage: 0.0%
+2025-09-20 16:22:51,255 - INFO - Cleanup stats - Cleaned: 0, Active keys: 1, Active IPs: 1, Memory usage: 0.0%
+2025-09-20 16:25:51,255 - INFO - Cleaned up 1 expired keys
+2025-09-20 16:25:51,255 - INFO - Cleanup stats - Cleaned: 1, Active keys: 0, Active IPs: 0, Memory usage: 0.0%
+2025-09-21 00:00:17,799 - INFO - Background cleanup thread started
+2025-09-21 00:00:17,803 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-21 00:00:17,806 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-21 00:00:17,806 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-21 00:00:17,806 - INFO -    • Auto cleanup every 3 minutes
+2025-09-21 00:00:17,806 - INFO -    • Key lifetime: 20 minutes
+2025-09-21 00:00:17,807 - INFO -    • Max keys in memory: 10000
+2025-09-21 00:00:17,818 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-21 00:00:17,820 - INFO -    • GET /health - Health check
+2025-09-21 00:00:17,841 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.4:5000
+2025-09-21 00:00:17,842 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-21 00:09:19,482 - INFO - Background cleanup thread started
+2025-09-21 00:09:19,486 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-21 00:09:19,487 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-21 00:09:19,487 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-21 00:09:19,488 - INFO -    • Auto cleanup every 3 minutes
+2025-09-21 00:09:19,488 - INFO -    • Key lifetime: 20 minutes
+2025-09-21 00:09:19,488 - INFO -    • Max keys in memory: 10000
+2025-09-21 00:09:19,491 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-21 00:09:19,492 - INFO -    • GET /health - Health check
+2025-09-21 00:09:19,510 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.4:5000
+2025-09-21 00:09:19,511 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-21 00:09:50,133 - INFO - Background cleanup thread started
+2025-09-21 00:09:50,137 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-21 00:09:50,137 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-21 00:09:50,139 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-21 00:09:50,139 - INFO -    • Auto cleanup every 3 minutes
+2025-09-21 00:09:50,139 - INFO -    • Key lifetime: 20 minutes
+2025-09-21 00:09:50,139 - INFO -    • Max keys in memory: 10000
+2025-09-21 00:09:50,141 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-21 00:09:50,143 - INFO -    • GET /health - Health check
+2025-09-21 00:09:50,160 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.4:5000
+2025-09-21 00:09:50,161 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-21 00:18:23,776 - INFO - 127.0.0.1 - - [21/Sep/2025 00:18:23] "[31m[1mGET /getkey?token=EXcknDlmkw4uZi0RtfSno6MS4NYR4JoR?link4m_token=95byn3QhbyyevwS32N9JKMkwiJqUAt5d HTTP/1.1[0m" 403 -
+2025-09-21 00:18:23,859 - INFO - 127.0.0.1 - - [21/Sep/2025 00:18:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 00:22:09,189 - INFO - 127.0.0.1 - - [21/Sep/2025 00:22:09] "[31m[1mGET /getkey?token=VH26HY9NtnY0NaJCWmaVwUOmLvzr9CvV HTTP/1.1[0m" 403 -
+2025-09-21 00:22:26,504 - INFO - 127.0.0.1 - - [21/Sep/2025 00:22:26] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 00:25:27,160 - INFO - 127.0.0.1 - - [21/Sep/2025 00:25:27] "GET / HTTP/1.1" 200 -
+2025-09-21 00:25:27,333 - INFO - 127.0.0.1 - - [21/Sep/2025 00:25:27] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-21 00:26:43,191 - INFO - 127.0.0.1 - - [21/Sep/2025 00:26:43] "[31m[1mGET /getkey?token=Tvxybnms8CeMjaClVAFTGac0Q4tIBBr7 HTTP/1.1[0m" 403 -
+2025-09-21 00:54:39,608 - INFO - 127.0.0.1 - - [21/Sep/2025 00:54:39] "[31m[1mGET /getkey HTTP/1.1[0m" 403 -
+2025-09-21 00:54:40,807 - INFO - 127.0.0.1 - - [21/Sep/2025 00:54:40] "[31m[1mGET /getkey HTTP/1.1[0m" 403 -
+2025-09-21 00:55:43,100 - INFO - 127.0.0.1 - - [21/Sep/2025 00:55:43] "[31m[1mGET /getkey HTTP/1.1[0m" 403 -
+2025-09-21 00:55:43,595 - INFO - 127.0.0.1 - - [21/Sep/2025 00:55:43] "[31m[1mGET /getkey HTTP/1.1[0m" 403 -
+2025-09-21 00:56:40,911 - INFO - 127.0.0.1 - - [21/Sep/2025 00:56:40] "[31m[1mGET /getkey HTTP/1.1[0m" 403 -
+2025-09-21 00:56:41,333 - INFO - 127.0.0.1 - - [21/Sep/2025 00:56:41] "[31m[1mGET /getkey HTTP/1.1[0m" 403 -
+2025-09-23 17:31:34,303 - INFO - Background cleanup thread started
+2025-09-23 17:31:34,306 - INFO - Server will run on http://0.0.0.0:5000
+2025-09-23 17:31:34,307 - INFO -    • Rate limiting (5 req/min/IP)
+2025-09-23 17:31:34,307 - INFO -    • Fingerprint verification (IP + User Agent)
+2025-09-23 17:31:34,308 - INFO -    • Auto cleanup every 3 minutes
+2025-09-23 17:31:34,308 - INFO -    • Key lifetime: 20 minutes
+2025-09-23 17:31:34,308 - INFO -    • Max keys in memory: 10000
+2025-09-23 17:31:34,310 - INFO -    • GET /verify/<key> - Xác minh key
+2025-09-23 17:31:34,311 - INFO -    • GET /health - Health check
+2025-09-23 17:31:34,375 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.100.176:5000
+2025-09-23 17:31:34,375 - INFO - [33mPress CTRL+C to quit[0m
+2025-09-23 17:31:41,524 - INFO - 192.168.100.176 - - [23/Sep/2025 17:31:41] "GET / HTTP/1.1" 200 -
+2025-09-23 17:31:41,577 - INFO - 192.168.100.176 - - [23/Sep/2025 17:31:41] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-23 17:32:16,757 - INFO - Received signal 2, shutting down gracefully...
+2025-09-23 17:32:16,757 - INFO - Final stats: {'total_keys_generated': 0, 'total_requests': 0, 'rate_limited_requests': 0, 'expired_keys_cleaned': 0, 'active_keys': 0, 'active_ips': 0, 'cached_fingerprints': 0, 'tracked_ips_for_rate_limit': 0, 'server_uptime': 42, 'memory_usage_keys': 0, 'memory_usage_percentage': 0.0}
