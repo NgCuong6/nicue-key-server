@@ -55,6 +55,9 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"]
 )
 
+# Admin password for direct key generation
+ADMIN_PASSWORD = "Cuongcute@123"
+
 
 # Enhanced decorator for logging with comprehensive request info
 def log_request(f):
@@ -879,6 +882,147 @@ def verify_key():
         analytics_collection.insert_one({"event": "error", "error": str(e), "timestamp": datetime.utcnow()})
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+@app.route('/admin/generate-key', methods=['GET', 'POST'])
+@log_request
+def admin_generate_key():
+    try:
+        if request.method == 'GET':
+            return render_template_string("""
+            <html>
+            <head>
+                <title>Admin - Generate Key</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                    body {
+                        font-family: 'Segoe UI', sans-serif;
+                        background: #1a1a1a;
+                        color: #fff;
+                        margin: 0;
+                        padding: 20px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        min-height: 100vh;
+                    }
+                    .container {
+                        background: #2d2d2d;
+                        padding: 30px;
+                        border-radius: 15px;
+                        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                        width: 100%;
+                        max-width: 400px;
+                    }
+                    h1 {
+                        color: #00ff00;
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+                    .input-group {
+                        margin-bottom: 20px;
+                    }
+                    label {
+                        display: block;
+                        margin-bottom: 10px;
+                        color: #00ff00;
+                    }
+                    input {
+                        width: 100%;
+                        padding: 10px;
+                        border: 2px solid #00ff00;
+                        background: #1a1a1a;
+                        color: #fff;
+                        border-radius: 5px;
+                        outline: none;
+                    }
+                    button {
+                        width: 100%;
+                        padding: 12px;
+                        background: #00ff00;
+                        color: #000;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-weight: bold;
+                        transition: all 0.3s;
+                    }
+                    button:hover {
+                        background: #00cc00;
+                        transform: translateY(-2px);
+                    }
+                    .error {
+                        color: #ff4444;
+                        text-align: center;
+                        margin-top: 10px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>🔐 Admin Key Generator</h1>
+                    <form method="POST">
+                        <div class="input-group">
+                            <label>Admin Password</label>
+                            <input type="password" name="password" required>
+                        </div>
+                        <button type="submit">Generate Key</button>
+                        {% if error %}
+                        <p class="error">{{ error }}</p>
+                        {% endif %}
+                    </form>
+                </div>
+            </body>
+            </html>
+            """, error=request.args.get('error'))
+
+        if request.method == 'POST':
+            password = request.form.get('password')
+            if password != ADMIN_PASSWORD:
+                return redirect('/admin/generate-key?error=Invalid password!')
+
+            # Generate a new key that works with the tool
+            now = datetime.utcnow()
+            display_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
+            key_data = {
+                "key_id": str(uuid.uuid4()),
+                "display_key": display_key,
+                "ip": "admin_generated",  # Special marker for admin-generated keys
+                "hardware_id": "",  # Empty to allow any hardware
+                "user_agent": "admin_generated",
+                "created_at": now.isoformat(),
+                "expires_at": (now + timedelta(days=30)).isoformat(),  # 30 days validity
+                "status": "active",
+                "admin_generated": True
+            }
+
+            # Create JWT token
+            jwt_token = jwt.encode({
+                "key_id": key_data["key_id"],
+                "display_key": key_data["display_key"],
+                "created_at": key_data["created_at"],
+                "expires_at": key_data["expires_at"]
+            }, JWT_SECRET, algorithm='HS256')
+
+            key_data['key'] = jwt_token
+            key_data['encrypted_key'] = encrypt_key(key_data)
+            
+            # Save to database
+            keys_collection.insert_one(key_data)
+
+            # Log key generation
+            analytics_collection.insert_one({
+                "event": "admin_key_generated",
+                "key_id": key_data["key_id"],
+                "ip": request.remote_addr,
+                "timestamp": now.isoformat()
+            })
+
+            # Redirect to key display
+            return redirect(f"/key/?key={jwt_token}")
+
+    except Exception as e:
+        print(f"Error in admin_generate_key: {e}")
+        return redirect('/admin/generate-key?error=An error occurred!')
 
 @app.route('/analytics')
 @log_request
